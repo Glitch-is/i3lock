@@ -79,6 +79,13 @@ bool skip_repeated_empty_password = false;
 
 bool blur = false;
 
+bool fingerprint = false;
+bool webcam = false;
+bool alert = false;
+
+bool email_flag = false;
+char email[128];
+
 /* isutf, u8_dec © 2005 Jeff Bezanson, public domain */
 #define isutf(c) (((c) & 0xC0) != 0x80)
 
@@ -685,13 +692,16 @@ int main(int argc, char *argv[]) {
         {"ignore-empty-password", no_argument, NULL, 'e'},
         {"inactivity-timeout", required_argument, NULL, 'I'},
         {"blur", no_argument, NULL, 'g'},
+        {"fingerprint", no_argument, NULL, 'f'},
+        {"webcam", no_argument, NULL, 'w'},
+        {"alert", required_argument, NULL, 'a'},
         {NULL, no_argument, NULL, 0}
     };
 
     if ((username = getenv("USER")) == NULL)
         errx(EXIT_FAILURE, "USER environment variable not set, please set it.\n");
 
-    char *optstring = "hvnbgdc:p:ui:teI:";
+    char *optstring = "hvnbgdc:p:ui:teI:fwa:"; // Figure this out
     while ((o = getopt_long(argc, argv, optstring, longopts, &optind)) != -1) {
         switch (o) {
         case 'v':
@@ -751,6 +761,18 @@ int main(int argc, char *argv[]) {
             break;
         case 'g':
             blur = true;
+            break;
+        case 'f':
+            fingerprint = true;
+            break;
+        case 'w':
+            webcam = true;
+            break;
+        case 'a':
+            //take in email
+            email_flag = true;
+            email = optarg; // error: assignment to expression with array type
+            printf("%s", email);
             break;
         default:
             errx(EXIT_FAILURE, "Syntax: i3lock [-v] [-n] [-b] [-d] [-c color] [-u] [-p win|default]"
@@ -826,8 +848,8 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Could not load image \"%s\": %s\n",
                     image_path, cairo_status_to_string(cairo_surface_status(img)));
             img = NULL;
-        }    
-    } 
+        }
+    }
 
     xcb_pixmap_t blur_pixmap;
     if (blur) {
@@ -835,12 +857,12 @@ int main(int argc, char *argv[]) {
             xcb_visualtype_t *vistype = get_root_visual_type(screen);
             /* Capture the current screen contents into an XCB surface buffer */
             blur_pixmap = capture_bg_pixmap(conn, screen, last_resolution);
-            cairo_surface_t *xcb_img = cairo_xcb_surface_create(conn, 
+            cairo_surface_t *xcb_img = cairo_xcb_surface_create(conn,
                 blur_pixmap, vistype, last_resolution[0], last_resolution[1]);
 
             /* The placeholder blur function currently needs a cairo image
              * surface, so we have to copy our screen onto that first */
-            img = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 
+            img = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                        last_resolution[0], last_resolution[1]);
             cairo_t *ctx = cairo_create(img);
             cairo_set_source_surface(ctx, xcb_img, 0, 0);
