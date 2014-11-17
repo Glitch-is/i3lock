@@ -5,8 +5,8 @@ This is a fork of i3lock which implements some security features like fingerprin
 Features
 --------
 - Fingerprint Scanners
-- Image Capturing the Bad Guys
-- Email Alerts with their face
+- Image Capture the Culprate
+- Email Alerts With Evidence
 
 Requirements
 ------------
